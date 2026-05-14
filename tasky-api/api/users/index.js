@@ -3,7 +3,7 @@ import User from './userModel';
 import asyncHandler from 'express-async-handler';
 import jwt from 'jsonwebtoken';
 
-const router = express.Router(); 
+const router = express.Router();
 
 // Get all users
 router.get('/', async (req, res) => {
@@ -31,8 +31,24 @@ router.post('/', asyncHandler(async (req, res) => {
 
 async function registerUser(req, res) {
     // Add input validation logic here
-    await User.create(req.body);
-    res.status(201).json({ success: true, msg: 'User successfully created.' });
+    try {
+        let password = req.body.password;
+        let validation = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!validation.test(password)) {
+            return res.status(400).json({ success: false, msg: "Password must be at least 8 characters and include one uppercase letter, one lowercase letter, one number, and one special character." })
+        }
+
+        await User.create(req.body);
+        res.status(201).json({ success: true, msg: 'User successfully created.' });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            msg: "User could not be created"
+        })
+    }
+
+    
 }
 
 async function authenticateUser(req, res) {
